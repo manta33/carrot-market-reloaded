@@ -1,6 +1,14 @@
 "use server";
 import { z } from "zod";
 
+const checkPasswords = ({
+  password,
+  confirm_password,
+}: {
+  password: string;
+  confirm_password: string;
+}) => password === confirm_password;
+
 const formSchema = z
   .object({
     username: z
@@ -18,14 +26,9 @@ const formSchema = z
     password: z.string().min(10),
     confirm_password: z.string().min(10),
   })
-  .superRefine(({ password, confirm_password }, ctx) => {
-    if (password !== confirm_password) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Two passwords should be equal",
-        path: ["cofirm_password"],
-      });
-    }
+  .refine(checkPasswords, {
+    message: "Both passwords should be the same!",
+    path: ["confirm_password"],
   });
 
 export async function createAccount(prevState: any, formData: FormData) {
